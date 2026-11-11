@@ -3,6 +3,8 @@
 dApp for Spectrum Sharing
 """
 
+from __future__ import annotations
+
 __author__ = "Andrea Lacava"
 
 import threading
@@ -12,7 +14,7 @@ import queue
 import time
 import os
 import json
-from typing import override
+from typing_extensions import override
 import numpy as np
 import asn1tools
 import jsonschema
@@ -626,30 +628,29 @@ class SpectrumSharingDApp(DApp):
 
     def _init_spectrum_encoder(self):
         """Initialize the spectrum encoder based on the encoding method"""
-        match self.encoding_method:
-            case "asn1":
-                asn_file_path = os.path.join(os.path.dirname(__file__), "defs", "e3sm_spectrum.asn")
-                self.spectrum_encoder = asn1tools.compile_files(asn_file_path, codec="per")
-            case "json":
-                json_schema_path = os.path.join(os.path.dirname(__file__), "defs", "e3sm_spectrum.json")
-                with open(json_schema_path, 'r') as f:
-                    self.spectrum_schema = json.load(f)
-                self.spectrum_validator_cls = jsonschema.validators.validator_for(self.spectrum_schema)
-                self.spectrum_validator_cls.check_schema(self.spectrum_schema)
-                self.spectrum_registry = self._build_spectrum_registry()
-                self.spectrum_encoder = "json"
-                dapp_logger.info("Spectrum JSON encoder initialized")
-            case "protobuf":
-                # Lazy import: only the protobuf path needs the generated stubs
-                # (and the protobuf runtime). The .proto is the interop contract
-                # with the gNB's protobuf-c encoder; field json_names are pinned
-                # so json_format bridges directly to the dApp's dict keys.
-                from .defs import e3sm_spectrum_pb2 as _spectrum_pb2
-                self._spectrum_pb2 = _spectrum_pb2
-                self.spectrum_encoder = "protobuf"
-                dapp_logger.info("Spectrum protobuf encoder initialized")
-            case _:
-                raise ValueError(f"Unsupported encoding method: {self.encoding_method}")
+        if self.encoding_method == "asn1":
+            asn_file_path = os.path.join(os.path.dirname(__file__), "defs", "e3sm_spectrum.asn")
+            self.spectrum_encoder = asn1tools.compile_files(asn_file_path, codec="per")
+        elif self.encoding_method == "json":
+            json_schema_path = os.path.join(os.path.dirname(__file__), "defs", "e3sm_spectrum.json")
+            with open(json_schema_path, 'r') as f:
+                self.spectrum_schema = json.load(f)
+            self.spectrum_validator_cls = jsonschema.validators.validator_for(self.spectrum_schema)
+            self.spectrum_validator_cls.check_schema(self.spectrum_schema)
+            self.spectrum_registry = self._build_spectrum_registry()
+            self.spectrum_encoder = "json"
+            dapp_logger.info("Spectrum JSON encoder initialized")
+        elif self.encoding_method == "protobuf":
+            # Lazy import: only the protobuf path needs the generated stubs
+            # (and the protobuf runtime). The .proto is the interop contract
+            # with the gNB's protobuf-c encoder; field json_names are pinned
+            # so json_format bridges directly to the dApp's dict keys.
+            from .defs import e3sm_spectrum_pb2 as _spectrum_pb2
+            self._spectrum_pb2 = _spectrum_pb2
+            self.spectrum_encoder = "protobuf"
+            dapp_logger.info("Spectrum protobuf encoder initialized")
+        else:
+            raise ValueError(f"Unsupported encoding method: {self.encoding_method}")
 
     def _build_spectrum_registry(self):
         import referencing

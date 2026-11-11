@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import queue
 import threading
@@ -327,24 +329,23 @@ class E3Interface:
                     # thread's context; reset it so an ack does not inherit a
                     # stale one.
                     latrec.ctx_set(data.get("latSeq", 0))
-                    match msg:
-                        case "control":
-                            rc = self.agent.send_control(
-                                data["ranFunctionId"], data["controlId"], data["actionData"],
-                                data.get("sequenceId", 0))
-                        case "subscription":
-                            self._send_subscription(data)
-                        case "ack":
-                            rc = self.agent.send_message_ack(data["requestId"], data["positive"])
-                        case "report":
-                            rc = self.agent.send_report(
-                                data["ranFunctionId"], data["reportData"],
-                                data["sequenceId"])
-                        case "release":
-                            rc = self.agent.release()
-                        case _:
-                            e3_logger.error("Unrecognized outbound message: %r; dropping", msg)
-                            continue
+                    if msg == "control":
+                        rc = self.agent.send_control(
+                            data["ranFunctionId"], data["controlId"], data["actionData"],
+                            data.get("sequenceId", 0))
+                    elif msg == "subscription":
+                        self._send_subscription(data)
+                    elif msg == "ack":
+                        rc = self.agent.send_message_ack(data["requestId"], data["positive"])
+                    elif msg == "report":
+                        rc = self.agent.send_report(
+                            data["ranFunctionId"], data["reportData"],
+                            data["sequenceId"])
+                    elif msg == "release":
+                        rc = self.agent.release()
+                    else:
+                        e3_logger.error("Unrecognized outbound message: %r; dropping", msg)
+                        continue
 
                     # A send returns the assigned message id (positive) on success
                     # and a negative ErrorCode on failure.

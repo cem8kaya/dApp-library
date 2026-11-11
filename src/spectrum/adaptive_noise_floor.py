@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 _NAN32 = np.float32(np.nan)

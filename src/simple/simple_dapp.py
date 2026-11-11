@@ -15,13 +15,15 @@ Both ASN.1 (default) and JSON encodings interoperate — libe3's Simple SM uses
 bare, camelCase messages in both (``{"data1":..,"timestamp":..}`` etc.).
 """
 
+from __future__ import annotations
+
 __author__ = "Andrea Lacava"
 
 import json
 import os
 import subprocess
 import time
-from typing import override
+from typing_extensions import override
 
 import asn1tools
 
@@ -147,21 +149,20 @@ class SimpleDApp(DApp):
 
     def _init_simple_encoder(self):
         """Compile the installed libe3 Simple SM ASN.1 grammar (or use JSON/protobuf)."""
-        match self.encoding_method:
-            case "asn1":
-                asn_path = _locate_simple_asn()
-                self.simple_encoder = asn1tools.compile_files(asn_path, codec="per")
-                dapp_logger.info("Simple ASN.1 encoder initialized from %s", asn_path)
-            case "json":
-                self.simple_encoder = "json"
-                dapp_logger.info("Simple JSON encoder initialized")
-            case "protobuf":
-                from .defs import e3sm_simple_pb2 as _simple_pb2
-                self._simple_pb2 = _simple_pb2
-                self.simple_encoder = "protobuf"
-                dapp_logger.info("Simple protobuf encoder initialized")
-            case _:
-                raise ValueError(f"Unsupported encoding method: {self.encoding_method}")
+        if self.encoding_method == "asn1":
+            asn_path = _locate_simple_asn()
+            self.simple_encoder = asn1tools.compile_files(asn_path, codec="per")
+            dapp_logger.info("Simple ASN.1 encoder initialized from %s", asn_path)
+        elif self.encoding_method == "json":
+            self.simple_encoder = "json"
+            dapp_logger.info("Simple JSON encoder initialized")
+        elif self.encoding_method == "protobuf":
+            from .defs import e3sm_simple_pb2 as _simple_pb2
+            self._simple_pb2 = _simple_pb2
+            self.simple_encoder = "protobuf"
+            dapp_logger.info("Simple protobuf encoder initialized")
+        else:
+            raise ValueError(f"Unsupported encoding method: {self.encoding_method}")
 
     def _simple_pb_new(self, message_type: str):
         return getattr(self._simple_pb2, self._SIMPLE_PB_TYPES[message_type])()

@@ -7,6 +7,8 @@ Run it with::
         --policy examples.hackathon_policy:MyPolicy
 """
 
+from __future__ import annotations
+
 from spectrum.policy import BaselinePolicy, Observation, Policy
 
 

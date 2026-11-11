@@ -4,6 +4,8 @@ dApp Base class that should be extended.
 This class implements the E3AP and is a wrapper for the access to the E3Interface class.+
 """
 
+from __future__ import annotations
+
 __author__ = "Andrea Lacava"
 
 from abc import ABC, abstractmethod

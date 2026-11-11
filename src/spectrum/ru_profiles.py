@@ -6,6 +6,8 @@ always wins. A key missing from a profile means "not calibrated / not known":
 the generic fallback in ``FALLBACK_DEFAULTS`` applies instead.
 """
 
+from __future__ import annotations
+
 from typing import Any, Mapping
 
 SETTING_KEYS = (

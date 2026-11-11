@@ -9,6 +9,8 @@ Usage:
     python examples/simple_dapp.py --timed 30               # run for 30 seconds then stop
 """
 
+from __future__ import annotations
+
 import argparse
 import threading
 import time
